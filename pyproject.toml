@@ -1,0 +1,8 @@
+[project]
+name = "lab1-rpn-calculator"
+version = "0.1.0"
+description = "RPN Calculator for Laboratory Work #1"
+requires-python = ">=3.12"
+dependencies = [
+    "pytest>=8.4.2",
+]
