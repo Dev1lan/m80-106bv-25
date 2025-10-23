@@ -5,6 +5,7 @@
 from typing import Union
 from constants import SUPPORTED_OPERATORS, ERROR_MESSAGES
 
+
 class RPNCalculator:
     """
     Калькулятор для вычисления выражений в обратной польской нотации (RPN)
@@ -13,6 +14,48 @@ class RPNCalculator:
     def __init__(self) -> None:
         """Инициализация калькулятора с поддержкой операторов"""
         self.supported_operators = SUPPORTED_OPERATORS
+
+    def _validate_parentheses(self, tokens: list[str]) -> None:
+        """
+        Проверяет корректность расстановки скобок в выражении
+
+        Args:
+            tokens (list[str]): Список токенов выражения
+
+        Raises:
+            ValueError: Если скобки несбалансированы или расположены некорректно
+        """
+        stack = []
+
+        for i, token in enumerate(tokens):
+            if token == '(':
+                stack.append(i)
+            elif token == ')':
+                if not stack:
+                    raise ValueError(ERROR_MESSAGES['unmatched_parentheses'])
+                open_index = stack.pop()
+                if open_index == i - 1:
+                    raise ValueError(ERROR_MESSAGES['empty_parentheses'])
+                expr_inside = tokens[open_index + 1:i]
+                if not expr_inside:
+                    raise ValueError(ERROR_MESSAGES['empty_parentheses'])
+                tmp_stack = []
+                for t in expr_inside:
+                    if t in self.supported_operators:
+                        if len(tmp_stack) < 2:
+                            raise ValueError(
+                                f"{ERROR_MESSAGES['incomplete_expression_in_parentheses']}: {' '.join(expr_inside)}")
+                        tmp_stack.pop()
+                        tmp_stack.pop()
+                        tmp_stack.append('result')
+                    elif t not in ('(', ')'):
+                        tmp_stack.append(t)
+                if len(tmp_stack) != 1:
+                    raise ValueError(
+                        f"{ERROR_MESSAGES['incomplete_expression_in_parentheses']}: {' '.join(expr_inside)}")
+
+        if stack:
+            raise ValueError(ERROR_MESSAGES['unmatched_parentheses'])
 
     def _tokenize(self, expression: str) -> list[str]:
         """
@@ -32,6 +75,11 @@ class RPNCalculator:
                 if current_token:
                     tokens.append(current_token)
                     current_token = ""
+            elif char in ('(', ')'):
+                if current_token:
+                    tokens.append(current_token)
+                    current_token = ""
+                tokens.append(char)
             else:
                 current_token += char
 
@@ -114,6 +162,8 @@ class RPNCalculator:
             raise ValueError(ERROR_MESSAGES['empty_expression'])
 
         tokens = self._tokenize(expression)
+        self._validate_parentheses(tokens)
+        tokens = [token for token in tokens if token not in ('(', ')')]
         stack: list[Union[int, float]] = []
 
         for token in tokens:
@@ -136,7 +186,7 @@ class RPNCalculator:
                     number = self._parse_number(token)
                     stack.append(number)
                 except ValueError:
-                    raise
+                    raise ValueError(f"{ERROR_MESSAGES['invalid_token']}: {token}")
 
         if len(stack) != 1:
             raise ValueError(f"{ERROR_MESSAGES['invalid_expression']}. В стеке осталось {len(stack)} элементов")

@@ -18,5 +18,8 @@ ERROR_MESSAGES = {
     'invalid_token': 'Некорректный токен',
     'division_by_zero': 'Деление на ноль',
     'integer_operands_required': 'Требуются целочисленные операнды',
-    'invalid_expression': 'Некорректное выражение'
+    'invalid_expression': 'Некорректное выражение',
+    'unmatched_parentheses': 'Несбалансированные скобки',
+    'empty_parentheses': 'Пустые скобки',
+    'incomplete_expression_in_parentheses': 'Незавершенное выражение в скобках'
 }
